@@ -54,7 +54,7 @@ async function saveBudget(){
     console.log("save budget clicked")
     const budgetInput = document.getElementById("budget-input");
     const budgetError = document.getElementById("budget-error");
-    const budgetValue = budgetInput.value.trim();
+    const budgetValue = parseFloat(budgetInput.value.trim());
 
     //validate the input 
     if (!budgetValue || isNaN(budgetValue) || budgetValue <=0) {
@@ -417,14 +417,14 @@ async function saveExpense() {
 }
 
 //Analyzing Expenses
-function expenseAnalysis(expenses, budget, financialGoals) {
+function expenseAnalysis(expenses, budget, financialGoal) {
 
     if(expenses.length === 0) {
         console.warn("no expenses to analyze")
         return;
     }
     //sum-up all expenses' spendings
-    const totalSpending = expenses.reduce((sum, exp) => sum + expenseAmount, 0)
+    const totalSpending = expenses.reduce((sum, exp) => sum + exp.expenseAmount, 0)
     console.log("total spent on expenses:", totalSpending)
     
     //sum up spending per category
@@ -452,7 +452,7 @@ function expenseAnalysis(expenses, budget, financialGoals) {
     if(goalPercntg <20) {
         suggestion ="Warning! Financial goals below 20%. Manage your spending "
     }
-    console.log("financial advice:", advice)
+    console.log("financial advice:", suggestion)
     return {
         totalSpending,
         allExpensePerCategories,
@@ -461,6 +461,61 @@ function expenseAnalysis(expenses, budget, financialGoals) {
         suggestion,       
     }  
 } 
+
+//Visualization >> initializing chart.js >>Doughnut chart
+let visualChart = null; //reference the chart
+function updateChart(expenseData, budget) {
+    const ctx = document.getElementById("budgetChart").getContext("2D")
+
+    //retrieve categories and values
+    const categories = Object.keys(expenseData);
+    const values = Object.values(expenseData);
+
+    //remove any existing chart before adding another
+    if(visualChart) {
+        visualChart.destroy();
+    }
+    //make a new chart
+    visualChart = new CharacterData(ctx, {
+        type: "doughnut",
+        data: {
+            labels: categories,
+            datasets: [{
+                label: "Expenses Breakdown",
+                data: values,
+                backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+                hoverBackgroundColor: ["#FF4384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF"],
+            }]
+    },
+    options: {
+        responsive: true,
+        plugins: {
+            title: {
+                display: true,
+                text: `Budget Usage (Total: KSH ${budget})`
+            }
+        }
+    }
+ });
+}
+
+//updating UI with suggestions from analysis
+function displaySuggestion(message) {
+    const suggestionItem = document.getElementById("financial-advice")
+
+    if(!suggestionItem){
+        console.warn("suggestion item not found in DOM")
+        return;
+    }
+    suggestionItem.innerText = message;
+    suggestionItem.style.color = message.includes("Warning") ? "red" : "green"   
+}
+//ensure page reload
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("page loaded. now fetching data to visualize")
+    await fetchAndDisplayExpenses();
+})
+
 
 
 
