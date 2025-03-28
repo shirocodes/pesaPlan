@@ -292,6 +292,24 @@ function displayExpenses(expenses) {
     })
 }
 
+//to delete expense from UI and json ||get ID >> send DELETE >> refresh list
+async function deleteExpense(e) {
+    const expenseID = e.target.dataset.id;
+    console.log("deleting the expenseID:", expenseID);
+
+    try {
+        const res = await fetch(`http://localhost:3000/expenses/${expenseID}`, {
+            method: "DELETE",
+        })
+        if(!res.ok) throw new Error("failed in deleting")
+        
+            console.log("success in deleting expense")
+            await fetchAndDisplayExpenses() //refresh expense list
+    } catch(error) {
+        console.error("error deleting expense:", error)
+    }   
+}
+
 //create expense input form
 function handleExpensesCreated(e) {
     e.preventDefault()
@@ -359,11 +377,14 @@ async function saveExpense() {
         //remove input forms & refresh list
         document.getElementById("expense-inputs").remove()
         await fetchAndDisplayExpenses();
+
     } catch (error) {
         console.error("error saving the expense:", error)
         errorAlert.textContent = "Failed!"
     }   
 }
+
+//Analyzing Expenses 
 
 
 
