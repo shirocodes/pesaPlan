@@ -21,7 +21,7 @@ async function fetchAndDisplayBudget() {
 
         //update budget btn text
         const budgetBTN = document.querySelector("#budget-BTN");
-        budgetBTN.innerHTML = budgetData.total ? `Budget Set: KSH ${budgetData.total}`
+        budgetBTN.innerHTML = budgetData.total ? `Budget Set: Ksh ${budgetData.total}`
         : "No budget set";
     } catch (error) {
         console.log("error fetching budget:", error);
@@ -98,7 +98,7 @@ async function saveBudget(){
         //remove input form and update UI
         document.getElementById("budget-inputs").remove();
         const budgetSet = document.querySelector(".budget-holder #budget-BTN")
-        budgetSet.innerHTML = `budget set: KSH ${updatedBudget.total}`
+        budgetSet.innerHTML = `budget set: Ksh ${updatedBudget.total}`
         budgetSet.style.backgroundColor = "green";
         budgetSet.style.color = "white"
 
@@ -138,8 +138,8 @@ async function fetchAndDisplayGoals() {
             return;
         }
         const goalsBTN = document.querySelector("#goals-BTN");
-        const savingsGoal = goals.savings ? `Savings Goal: KSH ${goals.savings}` : "No Savings Goal Set";
-        const investmentGoal = goals.investment > 0 ? `Investment Goal: KSH ${goals.investment}` : "No Investment Goal Set";
+        const savingsGoal = goals.savings ? `Savings Goal: Ksh ${goals.savings}` : "No Savings Goal Set";
+        const investmentGoal = goals.investment > 0 ? `Investment Goal: Ksh ${goals.investment}` : "No Investment Goal Set";
         goalsBTN.innerHTML = `${savingsGoal} | ${investmentGoal}`;
     
     } catch (error) {
@@ -155,13 +155,15 @@ function handleGoalCreates(e) {
     //avoid duplicates by checking if input form exists already
     if (document.getElementById("goals-inputs")) return;
 
-    let currentGoals = {savings: 0, investment: 0};
 
     //before showing form, fetch any existing goals:
     fetch("http://localhost:3000/financial_goal/1")
-        .then(res => res.json())
+        .then(res => {
+            if(!res.ok) throw new Error("failed to fetch goals")
+                return res.json()
+            })
         .then(goals => {
-            currentGoals = goals;
+            const currentGoals = goals || {savings: 0, investment: 0}
             console.log("current goals before input:", currentGoals);
 
              //elements to hold goals' inputs
@@ -239,7 +241,7 @@ async function saveGoal(type) {
 
         //remove input form and update UI
         document.getElementById("goals-inputs").remove()
-        document.querySelector("#goals-BTN").innerText = `${type} goal set: KSH ${updateGoal[type]}`
+        document.querySelector("#goals-BTN").innerText = `${type} goal set: Ksh ${updateGoal[type]}`
     await fetchAndDisplayGoals();
 
     }catch (error) {
@@ -310,13 +312,15 @@ async function fetchAndDisplayExpenses() {
     //assess the expenses
     const analyze = expenseAnalysis(expenses, budget, financialGoal)
 
+    console.log("Expense analysis result:", analyze);
+
     //ensure allExpensePercategories is available before passing chart update
     if (!analyze || !analyze.allExpensePerCategories) {
         console.warn("Invalid analysis structure");
         return;
     }
     //visualize using chart
-    updateChart(analyze.allExpensePerCategories, budget);
+    updateChart(analyze.allExpensePerCategories, budget, financialGoal);
     displaySuggestion(analyze.suggestion)
     } catch (error) {
         console.error("error analysing the expenses:", error);
@@ -335,7 +339,7 @@ function displayExpenses(expenses) {
 
     expenses.forEach(expense => {
         const li = document.createElement("li");
-        li.innerHTML = `${expense.category}: KSH ${expense.amount}
+        li.innerHTML = `${expense.category}: Ksh ${expense.expenseAmount}
         <button class="delete-expense" data-id="${expense.id}">X</button>`;
         expenseList.appendChild(li)
     })
@@ -471,7 +475,15 @@ function expenseAnalysis(expenses, budget, financialGoal) {
     console.log("financial goal allocation:", goalPercntg + "%")
 
     //after analysis, use 20% RULE to provide financial advice 
-    let suggestion = "Your financial strategy is great"
+    const suggestions = [
+        { threshold: 10, message: "Critical Warning! Your savings & investment are below 10%!" },
+        { threshold: 20, message: "Caution! Consider increasing your savings & investments to 20% or more." },
+        { threshold: Infinity, message: "Great! Your financial goal allocation is healthy." }
+    ];
+    
+    const suggestion = suggestions.find(s => goalPercntg < s.threshold).message;
+    
+    // let suggestion = "Your financial strategy is great"
     if(goalPercntg <20) {
         suggestion ="Warning! Financial goals below 20%. Manage your spending "
     }
@@ -485,21 +497,36 @@ function expenseAnalysis(expenses, budget, financialGoal) {
     }  
 } 
 
-//Visualization >> initializing chart.js >>Doughnut chart
+// //Visualization >> initializing chart.js >>Doughnut chart
 let visualChart = null; //reference the chart
-function updateChart(expenseData, budget) {
-    const ctx = document.getElementById("budgetChart").getContext("2D")
 
+function updateChart(expenseData, budget, financialGoal) {
+    const chartElement = document.getElementById("myChart");
+    if (!chartElement) {
+        console.warn("Chart element not found in DOM");
+        return;
+    }
+
+    const ctx = chartElement.getContext("2d");
+    if (!ctx) {
+        console.error("Failed to get canvas context for Chart.js");
+        return;
+    }
     //retrieve categories and values
     const categories = Object.keys(expenseData);
     const values = Object.values(expenseData);
+
+    // Adding savings & investment to the chart
+    const financialGoalValue = financialGoal.savings + financialGoal.investment;
+    categories.push("Savings & Investment");
+    values.push(financialGoalValue);
 
     //remove any existing chart before adding another
     if(visualChart) {
         visualChart.destroy();
     }
     //make a new chart
-    visualChart = new CharacterData(ctx, {
+    visualChart = new Chart(ctx, {
         type: "doughnut",
         data: {
             labels: categories,
@@ -511,14 +538,27 @@ function updateChart(expenseData, budget) {
             }]
     },
     options: {
-        responsive: true,
         plugins: {
-            title: {
-                display: true,
-                text: `Budget Usage (Total: KSH ${budget})`
+            annotation: {
+                annotations: {
+                    line1: {
+                        type: "line",
+                        yMin: (budget * 0.2),
+                        yMax: (budget * 0.2),
+                        borderColor: "red",
+                        borderWidth: 2,
+                        borderDash: [5, 5], // Dashed line
+                        label: {
+                            content: "20% Savings Threshold",
+                            enabled: true,
+                            position: "start"
+                        }
+                    }
+                }
             }
         }
     }
+
  });
 }
 
