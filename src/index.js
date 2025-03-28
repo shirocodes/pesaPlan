@@ -263,6 +263,13 @@ async function fetchAndDisplayExpenses() {
 
         const expenses = await res.json();
         console.log("fetched expenses:", expenses);
+
+        //check if fetched data is valid before any processing
+        if(!Array.isArray(expenses) || expenses.length === 0) {
+            console.warn("no available expenses");
+            return;
+        }
+
         displayExpenses(expenses)
     }catch (error) {
         console.error("error fetching expenses", error)
@@ -281,7 +288,7 @@ async function fetchAndDisplayExpenses() {
     const budgetData = await ResOnBudget.json()
     const goalData = await ResOnFinancialGoal.json()
 
-    if(budgetData.length === 0 || goalData.length === 0) {
+    if(!budgetData.length || !goalData.length) {
         console.warn("Financial goal and budget not set")
         return;
     }
@@ -289,9 +296,20 @@ async function fetchAndDisplayExpenses() {
     const budget = budgetData[0].total;
     const financialGoal = goalData[0]
 
+    //avoid calling expenseAnalysis() on empty data
+    if (!Array.isArray(expenses) || expenses.length === 0) {
+        console.warn("No expenses to analyze");
+        return;
+    }
+
     //assess the expenses
     const analyze = expenseAnalysis(expenses, budget, financialGoal)
 
+    //ensure allExpensePercategories is available before passing chart update
+    if (!analyze || !analyze.allExpensePerCategories) {
+        console.warn("Invalid analysis structure");
+        return;
+    }
     //visualize using chart
     updateChart(analyze.allExpensePerCategories, budget);
     displaySuggestion(analyze.suggestion)
