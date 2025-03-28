@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PesaPlan app</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>pesaPlan</h1>
+    </header>
+    <main>
+        <!-- budget area -->
+        <div class="budget-card">
+            <img src="assets/budget-icon.webp" alt="budget icon"
+            height="60px" width="60px">
+            <div class="budget-holder">
+                <h4>Budget</h4>
+                <p>Start with a budget to have a practical<br>
+                overview of your spending limits</p>
+                <button id="budget-BTN">Create Budget</button>
+            </div>  
+        </div>
+
+        <!-- financial goals -->
+        <div class="goals-card">
+            <img src="assets/goals-icon.webp" alt="goals icon"
+            height="60px" width="60px">
+            <div class="goals-holder">
+                <h4>financial goals</h4>
+                <p>Set your savings and investment goals<br>
+                 to start your financial security path </p>
+                <button id="goals-BTN">Create goals</button>
+            </div>  
+        </div>
+        <div id="expenses-card">
+            <img src="assets/expenses-icon.webp" alt="expenses icon"
+            height="60px" width="60px">
+            <div class="expenses-holder">
+                <h4>Expenses</h4>
+                <p>Add expenses to better compare your<br>
+                 spending against your financial goals</p>
+                <button id="expenses-BTN">Track Expenses</button>
+            </div>
+        </div>
+        <section id="statistics">
+            <h3>Analysis</h3>
+            <div>
+                <canvas id="myChart"></canvas>
+              </div>      
+        </section>
+    </main>
+    <footer>copypright</footer>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/src/index.js"></script>
+</body>
+</html>
