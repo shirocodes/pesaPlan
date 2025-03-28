@@ -1,11 +1,16 @@
 {
-  "budget": {
-    "total": 0
-  },
-  "financial_goal": {
-    "savings": 0,
-    "investment": 0
-  },
-  "expenses": [
-  ]
+  "budget": [
+    {
+      "id": "1",
+      "total": 0
+    }
+  ],
+  "financial_goal": [
+    {
+      "id": "1",
+      "savings": 0,
+      "investment": 0
+    }
+  ],
+  "expenses": []
 }
