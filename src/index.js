@@ -131,7 +131,12 @@ async function fetchAndDisplayGoals() {
         const goals = await res.json();
         console.log("Fetched goals:", goals);
         console.log("Investment goal fetched:", goals.investment)
-
+        
+        //avoid breaking when goal fetching
+        if (!goals || typeof goals !== "object") {
+            console.warn("Invalid goals data received");
+            return;
+        }
         const goalsBTN = document.querySelector("#goals-BTN");
         const savingsGoal = goals.savings ? `Savings Goal: KSH ${goals.savings}` : "No Savings Goal Set";
         const investmentGoal = goals.investment > 0 ? `Investment Goal: KSH ${goals.investment}` : "No Investment Goal Set";
