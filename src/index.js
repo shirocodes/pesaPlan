@@ -253,6 +253,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     expensesBtn.addEventListener("click", handleExpensesCreated)
 })
 
+//create expense input form
+function handleExpensesCreated(e) {
+    e.preventDefault()
+    console.log("track expenses button clicked")
+
+    if(document.getElementById("expense-inputs")) return;
+
+    //create elements ||drop-downmenu
+    const wrapExpenseInputs = document.createElement("div")
+    wrapExpenseInputs.id = "expense-inputs"
+    wrapExpenseInputs.innerHTML = `
+        <label for="expense-category">Category:</label>
+        <select id="expense-category">
+            <option value="food">Food</option>
+            <option value="transport">Transport</option>
+            <option value="debt">Debt</option>
+            <option value="rent">Rent</option>
+            <option value="amenities">Amenities</option>
+        </select>
+
+        <input type="number" id="expense-amount" placeholder="enter amount">
+        <button id="saveExpense-btn">Save expense</button>
+    `;
+    document.querySelector(".expenses-holder").appendChild(wrapExpenseInputs);
+    document.getElementById("saveExpense-btn").addEventListener("click", saveExpense)
+}
+
+//saving on json and displaying it
+async function saveExpense() { 
+    console.log("save expense clicked")
+    
+}
+
 
 
 
