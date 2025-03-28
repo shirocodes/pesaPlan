@@ -253,6 +253,45 @@ document.addEventListener("DOMContentLoaded", async () => {
     expensesBtn.addEventListener("click", handleExpensesCreated)
 })
 
+//fetching & displaying existing/current expenses
+async function fetchAndDisplayExpenses() {
+    console.log("fetching expenses ...")
+
+    try {
+        const res = await fetch("http://localhost:3000/expenses");
+        if(!res.ok) throw new Error("failed to fetch expenses");
+
+        const expenses = await res.json();
+        console.log("fetched expenses:", expenses);
+        displayExpenses(expenses)
+    }catch (error) {
+        console.error("error fetching expenses", error)
+    }  
+}
+function displayExpenses(expenses) {
+    const expensesHolder = document.querySelector(".expenses-holder")
+    const existingExpList = document.getElementById("expense-list")
+    //avoid duplicates
+    if(existingExpList) existingExpList.remove();
+
+    //create expense list ul holder
+    const expenseList = document.createElement("ul");
+    expenseList.id = "expense-list";
+
+    expenses.forEach(expense => {
+        const li = document.createElement("li");
+        li.innerHTML = `${expense.category}: KSH ${expense.amount}
+        <button class="delete-expense" data-id="${expense.id}">X</button>`;
+        expenseList.appendChild(li)
+    })
+    expensesHolder.appendChild(expenseList);
+
+    //listen on delete
+    document.querySelectorAll(".delete-expense").forEach(button => {
+        button.addEventListener("click", deleteExpense)
+    })
+}
+
 //create expense input form
 function handleExpensesCreated(e) {
     e.preventDefault()
@@ -275,7 +314,9 @@ function handleExpensesCreated(e) {
 
         <input type="number" id="expense-amount" placeholder="enter amount">
         <button id="saveExpense-btn">Save expense</button>
+        <p id="ErrorInInput"></p>
     `;
+    //listen for save expense btn
     document.querySelector(".expenses-holder").appendChild(wrapExpenseInputs);
     document.getElementById("saveExpense-btn").addEventListener("click", saveExpense)
 }
@@ -283,6 +324,20 @@ function handleExpensesCreated(e) {
 //saving on json and displaying it
 async function saveExpense() { 
     console.log("save expense clicked")
+
+    const category = document.getElementById("expense-category")
+    const inputAmount = document.getElementById("expense-amount")
+    const errorAlert = document.getElementById("ErrorInInput")
+    //validate inputs
+    const expenseAmount = inputAmount.value.trim();
+
+    if(!expenseAmount || isNaN(expenseAmount) || expenseAmount <= 0) {
+        errorAlert.textContent = "Enter a valid number"
+        errorAlert.style.color = "red"
+        console.warn("")
+    }
+
+
     
 }
 
