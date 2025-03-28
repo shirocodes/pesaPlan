@@ -242,6 +242,18 @@ async function saveGoal(type) {
     }
 }
 
+//Handling Expenses 
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("page expenses  loaded successfully");
+
+    await fetchAndDisplayExpenses()
+
+    //listen for trackexpenses BTN
+    const expensesBtn = document.querySelector("#expenses-BTN")
+    expensesBtn.addEventListener("click", handleExpensesCreated)
+})
+
+
 
 
 
