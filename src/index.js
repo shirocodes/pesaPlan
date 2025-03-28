@@ -74,25 +74,85 @@ async function saveBudget(){
 }
 
 //handling goals creation || savings goals and investment goals
-const goalsBTN = document.querySelector("#goals-BTN");
-goalsBTN.addEventListener("click", (e) =>{
-    e.preventDefault()
-    console.log("create goals btn clicked")
+const goalscreatebtn = document.querySelector(".goals-holder #goals-BTN");
+goalscreatebtn.addEventListener("click",handleGoalCreates);
 
+function handleGoalCreates(e) {
+    e.preventDefault()
+    console.log("create goals btn clicked ...");
+
+    //avoid duplicates by checking if input form exists already
+    if (document.getElementById("goals-inputs")) return;
     //elements to hold goals' inputs
     const wrapGoalsInputs = document.createElement("div");
     wrapGoalsInputs.id = "goals-inputs";
     wrapGoalsInputs.innerHTML = `
         <p class="invest-input"> savings goal</p>
         <input type="number" id="goal-input" placeholder ="enter amount">
-        <button id="savegoal-btn">Save goal</button>
+        <button class="savegoal-btn" data-type="savings">Save goal</button>
+
         <p class="invest-input"> investment goal</p>
         <input type="number" id="invest-input" placeholder ="enter amount">
-        <button id="investgoal-btn">Save goal</button>
+        <button class="savegoal-btn" data-type="investment">Save goal</button>
+
         <p id="goals-error"></p> `
 
         //append to goals holder
         const goalsHolder = document.querySelector(".goals-holder")
         goalsHolder.appendChild(wrapGoalsInputs)
 
-})
+        //event delegation to both savegoal-btn
+        wrapGoalsInputs.addEventListener("click", (e) => {
+            if(e.target.classList.contains("savegoal-btn")) {
+                saveGoal(e.target.dataset.type);
+            }
+        })
+}
+
+//handling save goals 
+async function saveGoal(type) {
+    console.log(`${type} goal save btn clicked`);
+
+    const inputLabel = type === "savings" ? document.getElementById("goal-input") :
+    document.getElementById("invest-input");
+    const goalValue = inputLabel.value.trim();
+    const goalError = document.getElementById("goals-error");
+    //validate inputs
+    if(!goalValue || isNaN(goalValue) || goalValue <=0) {
+        goalError.textContent = "Invalid number"
+        goalError.style.color = "red"
+        console.warn("invalid input for goal")
+        return;
+    }
+    console.log(`${type} goal saved: ${goalValue}`);
+    goalError.textContent ="";
+
+    //prepare data for a PATCH request
+    const goalData = {[type]: Number(goalValue)}
+
+    try {
+        const res = await fetch("http://localhost:3000/financial_goal/1", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json"},
+            body: JSON.stringify(goalData),
+        })
+        if(!res.ok) throw new Error("failed to update goal")
+
+        const updateGoal = await res.json();
+        console.log(`successful ${type} goals update:`, updateGoal);
+
+        //remove input form and update UI
+        document.getElementById("goals-inputs").remove()
+        document.querySelector("#goals-BTN").innerText = `${type} goal set: KSH ${updateGoal[type]}`
+    } catch (error) {
+        console.error(`error updating ${type} goal:`, error)
+    }
+}
+//modify event listener for create goals btn
+document.querySelector("#goals-BTN").addEventListener("click", (e) => {
+    e.preventDefault();
+    handleGoalCreates();
+});
+
+
+
