@@ -325,7 +325,7 @@ function handleExpensesCreated(e) {
 async function saveExpense() { 
     console.log("save expense clicked")
 
-    const category = document.getElementById("expense-category")
+    const category = document.getElementById("expense-category").value
     const inputAmount = document.getElementById("expense-amount")
     const errorAlert = document.getElementById("ErrorInInput")
     //validate inputs
@@ -339,7 +339,11 @@ async function saveExpense() {
     }
 
     //prepare expense Data ||POST request
-    const currentExpense = {category, expenseAmount: Number(expenseAmount)}
+    const currentExpense = {
+        id: Math.random().toString(16).slice(2, 6),  // Unique ID
+        category,   // Store as a string, not an object
+        expenseAmount: Number(expenseAmount) 
+    }
 
     try {
         const res = await fetch("http://localhost:3000/expenses", {
