@@ -1,14 +1,36 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
     console.log("page loaded successfully")
+
+    await fetchAndDisplayBudget() //fetchand show existing budgets
     
     // listen for budget button
     const budgetButton = document.querySelector(".budget-card .budget-holder #budget-BTN"); 
     budgetButton.addEventListener("click", handleBudgetCreates);
 });
 
+//fetch any existing budgets ||PATCH
+async function fetchAndDisplayBudget() {
+    console.log("fetching existing budget ...")
+
+    try {
+        const res = await fetch("http://localhost:3000/budget/1")
+        if(!res.ok) throw new Error("failed in fetching existing budget")
+        
+            const budgetData = await res.json()
+            console.log("fetched budget is:", budgetData);
+
+        //update budget btn text
+        const budgetBTN = document.querySelector("#budget-BTN");
+        budgetBTN.innerHTML = budgetData.total ? `Budget Set: KSH ${budgetData.total}`
+        : "No budget set";
+    } catch (error) {
+        console.log("error fetching budget:", error);
+    }   
+}
+
 function handleBudgetCreates(e) { //create budget inputs dynamically
     e.preventDefault()
-    console.log("budget button clicked") 
+    console.log("budget button clicked")
 
     // Prevent duplicate input fields
     if (document.getElementById("budget-inputs")) return;
@@ -45,28 +67,43 @@ async function saveBudget(){
      console.log(`budget saved: ${budgetValue}`)
      budgetError.textContent = ""
 
-    //prepare budget data and send PATCH request
-    const budgetData = {total: Number(budgetValue)};
-    console.log("sending request updating budget:", budgetData)
+    //prepare budget data and send PATCH request || avoid overwriting
+    let existingBudget = {}
+    try {
+        const res = await fetch("http://localhost:3000/budget/1")
+        if(!res.ok) throw new Error("failed fetching existing budget")
+        
+            existingBudget = await res.json()
+            console.log("existing budget before updates is:", existingBudget)       
+    } catch (error) {
+        console.warn("error fetching existing budget:", error)
+    }
 
-    try { 
+    //update budget without overwriting existing data
+    const updatedBudgetData = {...existingBudget, total: Number(budgetValue)};
+    console.log("Updated budget to be sent to json:", updatedBudgetData)
+
+    try {
         const res = await fetch("http://localhost:3000/budget/1", {
             method: "PATCH",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ total: Number(budgetValue) }),
-        });
-        //see if successful
-        if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
-        const updatedBudget = await res.json();
+            body: JSON.stringify(updatedBudgetData)
+        })
 
-        console.log("successful budget update:", updatedBudget);
-         //remove input form and update UI
-         document.getElementById("budget-inputs").remove();
-         const budgetSet = document.querySelector(".budget-holder #budget-BTN")
-         budgetSet.innerHTML = `budget set: KSH ${updatedBudget.total}`
-         budgetSet.style.backgroundColor = "green";
-         budgetSet.style.color = "white"
-    } catch(error) {
+        if(!res.ok) throw new Error("failed to update budget")
+        
+        const updatedBudget = await res.json()
+        console.log("successful budget update:", updatedBudget)
+
+        //remove input form and update UI
+        document.getElementById("budget-inputs").remove();
+        const budgetSet = document.querySelector(".budget-holder #budget-BTN")
+        budgetSet.innerHTML = `budget set: KSH ${updatedBudget.total}`
+        budgetSet.style.backgroundColor = "green";
+        budgetSet.style.color = "white"
+
+        await fetchAndDisplayBudget(); //refetch budget to update UI
+    } catch (error) {
         console.error("Error updating budget:", error)
         budgetError.textContent ="Failed! Try again"
         budgetError.style.color = "red"
@@ -98,8 +135,8 @@ async function fetchAndDisplayGoals() {
         const goalsBTN = document.querySelector("#goals-BTN");
         const savingsGoal = goals.savings ? `Savings Goal: KSH ${goals.savings}` : "No Savings Goal Set";
         const investmentGoal = goals.investment > 0 ? `Investment Goal: KSH ${goals.investment}` : "No Investment Goal Set";
-        
         goalsBTN.innerHTML = `${savingsGoal} | ${investmentGoal}`;
+    
     } catch (error) {
         console.error("Error fetching goals:", error);
     }
@@ -197,13 +234,14 @@ async function saveGoal(type) {
 
         //remove input form and update UI
         document.getElementById("goals-inputs").remove()
-        document.querySelector("#goals-BTN").innerText = `${type} goal set: KSH ${updateGoal[type]}`   
+        document.querySelector("#goals-BTN").innerText = `${type} goal set: KSH ${updateGoal[type]}`
     await fetchAndDisplayGoals();
 
     }catch (error) {
         console.error(`error updating ${type} goal:`, error)
     }
 }
+
 
 
 
