@@ -74,45 +74,85 @@ async function saveBudget(){
 }
 
 //handling goals creation || savings goals and investment goals
-const goalscreatebtn = document.querySelector(".goals-holder #goals-BTN");
-goalscreatebtn.addEventListener("click",handleGoalCreates);
+document.addEventListener("DOMContentLoaded", async () => {
+    console.log("page loaded successfully");
 
+    await fetchAndDisplayGoals();
+    //listen on create goals btn
+    const goalscreatebtn = document.querySelector(".goals-holder #goals-BTN");
+    goalscreatebtn.addEventListener("click",handleGoalCreates);
+})
+
+//fetch/display existing goals
+async function fetchAndDisplayGoals() {
+    console.log("Fetching existing goals...");
+
+    try {
+        const res = await fetch("http://localhost:3000/financial_goal/1");
+        if (!res.ok) throw new Error("Failed to fetch goals");
+
+        const goals = await res.json();
+        console.log("Fetched goals:", goals);
+        console.log("Investment goal fetched:", goals.investment)
+
+        const goalsBTN = document.querySelector("#goals-BTN");
+        const savingsGoal = goals.savings ? `Savings Goal: KSH ${goals.savings}` : "No Savings Goal Set";
+        const investmentGoal = goals.investment > 0 ? `Investment Goal: KSH ${goals.investment}` : "No Investment Goal Set";
+        
+        goalsBTN.innerHTML = `${savingsGoal} | ${investmentGoal}`;
+    } catch (error) {
+        console.error("Error fetching goals:", error);
+    }
+}
+
+//show goals input after create goals click
 function handleGoalCreates(e) {
     e.preventDefault()
     console.log("create goals btn clicked ...");
 
     //avoid duplicates by checking if input form exists already
     if (document.getElementById("goals-inputs")) return;
-    //elements to hold goals' inputs
-    const wrapGoalsInputs = document.createElement("div");
-    wrapGoalsInputs.id = "goals-inputs";
-    wrapGoalsInputs.innerHTML = `
-        <p class="invest-input"> savings goal</p>
-        <input type="number" id="goal-input" placeholder ="enter amount">
-        <button class="savegoal-btn" data-type="savings">Save goal</button>
 
-        <p class="invest-input"> investment goal</p>
-        <input type="number" id="invest-input" placeholder ="enter amount">
-        <button class="savegoal-btn" data-type="investment">Save goal</button>
+    let currentGoals = {savings: 0, investment: 0};
 
-        <p id="goals-error"></p> `
+    //before showing form, fetch any existing goals:
+    fetch("http://localhost:3000/financial_goal/1")
+        .then(res => res.json())
+        .then(goals => {
+            currentGoals = goals;
+            console.log("current goals before input:", currentGoals);
 
-        //append to goals holder
-        const goalsHolder = document.querySelector(".goals-holder")
-        goalsHolder.appendChild(wrapGoalsInputs)
+             //elements to hold goals' inputs
+            const wrapGoalsInputs = document.createElement("div");
+            wrapGoalsInputs.id = "goals-inputs";
+            wrapGoalsInputs.innerHTML = `
+                <p class="invest-input"> savings goal</p>
+                <input type="number" id="goal-input" placeholder ="enter amount">
+                <button class="savegoal-btn" data-type="savings">Save goal</button>
 
-        //event delegation to both savegoal-btn
-        wrapGoalsInputs.addEventListener("click", (e) => {
-            if(e.target.classList.contains("savegoal-btn")) {
-                saveGoal(e.target.dataset.type);
-            }
-        })
+                <p class="invest-input"> investment goal</p>
+                <input type="number" id="invest-input" placeholder ="enter amount">
+                <button class="savegoal-btn" data-type="investment">Save goal</button>
+
+                <p id="goals-error"></p> `
+                
+            //append to goals holder
+            const goalsHolder = document.querySelector(".goals-holder")
+            goalsHolder.appendChild(wrapGoalsInputs)
+
+            //event delegation to both savegoal-btn
+            wrapGoalsInputs.addEventListener("click", (e) => {
+                if(e.target.classList.contains("savegoal-btn")) {
+                    saveGoal(e.target.dataset.type);
+                }
+            })
+            }) .catch(error => console.warn("error fetching current goals:", error))
 }
 
-//handling save goals 
+//no overwriting others while saving new goals 
 async function saveGoal(type) {
     console.log(`${type} goal save btn clicked`);
-
+    //choose an input label based on type of goal
     const inputLabel = type === "savings" ? document.getElementById("goal-input") :
     document.getElementById("invest-input");
     const goalValue = inputLabel.value.trim();
@@ -127,32 +167,43 @@ async function saveGoal(type) {
     console.log(`${type} goal saved: ${goalValue}`);
     goalError.textContent ="";
 
-    //prepare data for a PATCH request
-    const goalData = {[type]: Number(goalValue)}
+    let existingGoals = {};
+
+    //fetch existing data to avoid overwrites
+    try {
+        const res = await fetch("http://localhost:3000/financial_goal/1")
+        if (!res.ok) throw new Error("failed to fetch existing goals")
+        
+        existingGoals = await res.json();
+        console.log("existing goals before update:", existingGoals)   
+    } catch (error) {
+        console.warn("error fetching existing goals:", error)
+    }
+
+    //consolidate the goals 
+    const updatedGoalData = {...existingGoals, [type]: Number(goalValue)};
+    console.log("updated goal data to be sent:", updatedGoalData)
 
     try {
         const res = await fetch("http://localhost:3000/financial_goal/1", {
             method: "PATCH",
-            headers: { "Content-Type": "application/json"},
-            body: JSON.stringify(goalData),
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify(updatedGoalData)
         })
-        if(!res.ok) throw new Error("failed to update goal")
-
+        if (!res.ok) throw new Error("failed to update goals")
+        
         const updateGoal = await res.json();
         console.log(`successful ${type} goals update:`, updateGoal);
 
         //remove input form and update UI
         document.getElementById("goals-inputs").remove()
-        document.querySelector("#goals-BTN").innerText = `${type} goal set: KSH ${updateGoal[type]}`
-    } catch (error) {
+        document.querySelector("#goals-BTN").innerText = `${type} goal set: KSH ${updateGoal[type]}`   
+    await fetchAndDisplayGoals();
+
+    }catch (error) {
         console.error(`error updating ${type} goal:`, error)
     }
 }
-//modify event listener for create goals btn
-document.querySelector("#goals-BTN").addEventListener("click", (e) => {
-    e.preventDefault();
-    handleGoalCreates();
-});
 
 
 
