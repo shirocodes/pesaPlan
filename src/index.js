@@ -334,11 +334,31 @@ async function saveExpense() {
     if(!expenseAmount || isNaN(expenseAmount) || expenseAmount <= 0) {
         errorAlert.textContent = "Enter a valid number"
         errorAlert.style.color = "red"
-        console.warn("")
+        console.warn("Invalid input")
+        return;
     }
 
+    //prepare expense Data ||POST request
+    const currentExpense = {category, expenseAmount: Number(expenseAmount)}
 
-    
+    try {
+        const res = await fetch("http://localhost:3000/expenses", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body:JSON.stringify(currentExpense),
+        })
+
+        if(!res.ok) throw new Error("failed to save the expense");
+
+        const expenseSaved = await res.json()
+        console.log("expense saved:", expenseSaved);
+        //remove input forms & refresh list
+        document.getElementById("expense-inputs").remove()
+        await fetchAndDisplayExpenses();
+    } catch (error) {
+        console.error("error saving the expense:", error)
+        errorAlert.textContent = "Failed!"
+    }   
 }
 
 
