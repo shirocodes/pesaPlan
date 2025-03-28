@@ -267,6 +267,38 @@ async function fetchAndDisplayExpenses() {
     }catch (error) {
         console.error("error fetching expenses", error)
     }  
+
+    //account for the analyzed expenses for analysis
+    //  >>drawing from expenseAnalysis()
+    try {
+        const ResOnExpenses = await fetch("http://localhost:3000/expenses")
+        const ResOnBudget = await fetch("http://localhost:3000/budget")
+        const ResOnFinancialGoal = await fetch("http://localhost:3000/financial_goal")
+    if(!ResOnExpenses.ok || !ResOnBudget.ok || !ResOnFinancialGoal.ok) {
+        throw new Error("Error fetching data")
+    }
+    const expenses = await ResOnExpenses.json()
+    const budgetData = await ResOnBudget.json()
+    const goalData = await ResOnFinancialGoal.json()
+
+    if(budgetData.length === 0 || goalData.length === 0) {
+        console.warn("Financial goal and budget not set")
+        return;
+    }
+
+    const budget = budgetData[0].total;
+    const financialGoal = goalData[0]
+
+    //assess the expenses
+    const analyze = expenseAnalysis(expenses, budget, financialGoal)
+
+    //visualize using chart
+    updateChart(analyze.allExpensePerCategories, budget);
+    displaySuggestion(analyze.suggestion)
+    } catch (error) {
+        console.error("error analysing the expenses:", error);
+    }
+
 }
 function displayExpenses(expenses) {
     const expensesHolder = document.querySelector(".expenses-holder")
@@ -427,8 +459,7 @@ function expenseAnalysis(expenses, budget, financialGoals) {
         categoryPercents,
         goalPercntg,
         suggestion,       
-    }
-   
+    }  
 } 
 
 
