@@ -384,7 +384,52 @@ async function saveExpense() {
     }   
 }
 
-//Analyzing Expenses 
+//Analyzing Expenses
+function expenseAnalysis(expenses, budget, financialGoals) {
+
+    if(expenses.length === 0) {
+        console.warn("no expenses to analyze")
+        return;
+    }
+    //sum-up all expenses' spendings
+    const totalSpending = expenses.reduce((sum, exp) => sum + expenseAmount, 0)
+    console.log("total spent on expenses:", totalSpending)
+    
+    //sum up spending per category
+    const allExpensePerCategories = expenses.reduce((acc, exp) => {
+        acc[exp.category] = (acc[exp.category] || 0) + exp.expenseAmount;
+        return acc;
+    }, {});
+    console.log("total expense per category:", allExpensePerCategories)
+
+    //Visualizing spending per category by Percent
+    const categoryPercents = Object.keys(allExpensePerCategories).map(category => ({
+            category,
+            percentage: ((allExpensePerCategories[category] /budget) * 100). toFixed(2),
+        }))
+    console.log("category percentage mapdown:",categoryPercents);
+    
+    //Using the 20% in budget breakdown >> define % on financial goals
+    const overallFinancialGoal = financialGoal.savings + financialGoal.investment;
+    const goalPercntg = ((overallFinancialGoal / budget) * 100).toFixed(2);
+
+    console.log("financial goal allocation:", goalPercntg + "%")
+
+    //after analysis, use 20% RULE to provide financial advice 
+    let suggestion = "Your financial strategy is great"
+    if(goalPercntg <20) {
+        suggestion ="Warning! Financial goals below 20%. Manage your spending "
+    }
+    console.log("financial advice:", advice)
+    return {
+        totalSpending,
+        allExpensePerCategories,
+        categoryPercents,
+        goalPercntg,
+        suggestion,       
+    }
+   
+} 
 
 
 
