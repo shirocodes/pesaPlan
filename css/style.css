@@ -42,7 +42,7 @@ main {
     gap: 0.5rem;
     border: 1px solid greenyellow;
 }
-#budget-card, #goals-card, #expenses-card{
+.budget-card, .goals-card, #expenses-card{
     display: flex;
     gap: 1rem;
     padding: 0.2rem;
@@ -51,10 +51,24 @@ main {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
 } 
-.budget-holder, .goals-holder, .expenses-holder {
+.budget-holder {
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
+}
+
+.goals-holder, .expenses-holder {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+#expense-list {
+    overflow-y: auto;
+    font-size: 0.8rem;
+    text-align: center;
 }
 
 #statistics {
