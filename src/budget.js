@@ -27,10 +27,9 @@ function createBudgetElement() {
 
 //saveBudget() > input validation > saving to json > updating UI
 async function saveBudget() { 
-    console.log("Budget input field added to the DOM.");
     const budgtInput = document.getElementById("budgtInput-field")
     const budgtValue = parseInt(budgtInput.value.trim());
-    budgetError.document.getElementById("budget-error")
+    const budgetError = document.getElementById("budget-error")
 
     console.log(`Entered budget value: ${budgtValue}`);
 
@@ -52,12 +51,12 @@ async function saveBudget() {
             console.log("No existing budget found. Creating new budget...");
             
             //no budget, so create one
-            await postData("budget", {amount: budgtValue});
+            await postData("budget", {total: budgtValue});
         } else {
             console.log(`Updating existing budget (ID: ${existingBudget[0].id})...`);
             
             //budget exists, so update it
-            await pathData("budget", existingBudget[0].id, {amount: budgtValue}) 
+            await pathData("budget", existingBudget[0].id, {total: budgtValue}) 
         }
         console.log("Budget successfully saved.");
         updateBudgetUI(budgtValue);
@@ -69,6 +68,11 @@ async function saveBudget() {
 //remove inputs > changing buttons color/content
 function updateBudgetUI(amount) {
     console.log(`Updating UI with new budget: Ksh ${amount}`);
+
+    if (!amount || isNaN(amount)) {
+        console.warn("No budget amount found. Keeping default button text.");
+        return;
+    }
 
     const budgetWrap = document.getElementById("budget-wrapper")
     console.log("Removing budget input container from DOM.");
@@ -83,10 +87,13 @@ function updateBudgetUI(amount) {
 
 //on page load, load existing budget & updateUI
 async function loadBudget() {
+    console.log("Loading budget from server...");
     try {
         const budgetData = await getData("budget")
+        console.log("Fetched budget data:", budgetData);
+
         if(budgetData.length > 0) {
-            updateBudgetUI(budgetData[0].amount)
+            updateBudgetUI(budgetData[0].total)
         }
     }catch(error) {console.error("failed to load budget:", error)} 
 }
