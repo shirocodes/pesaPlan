@@ -51,6 +51,11 @@ async function saveExpenses() {
     try {
         await postData("expenses", {amount, category})
         console.log("successfuly saved expense")
+
+        //after saving, clear input values 
+        inputAmt.value = ""
+        inputCategory.value = ""
+        //now load expense list
         loadExpenses();
     } catch (error) {console.error("error saving expenses")}
 }
