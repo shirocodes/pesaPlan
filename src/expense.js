@@ -1,4 +1,4 @@
-import { getData, postData, pathData } from "./api.js";
+import { getData, postData, pathData, deleteData } from "./api.js";
 
 const expensHolder = document.querySelector(".expenses-holder");
 const expensBTN = document.getElementById("expenses-BTN")
@@ -15,11 +15,11 @@ function createExpensInput() {
     expensesDiv.id = "expense-input";
 
     expensesDiv.innerHTML = `
-        <input type="number" id="expns-amt" placeholder = "enter amount">
         <select id="expns-category">
             <option value="">Select Category</option>
-            ${categories.map(category => `<option value="${category}">${category}</option>`).join("")}
+            ${categories.map(categry => `<option value="${categry}">${categry}</option>`).join("")}
         </select>
+         <input type="number" id="expns-amt" placeholder = "enter amount">
         <button id="save-expns">Save Expense</button>
         <p id="expns-error"></p>
     `;
@@ -37,7 +37,7 @@ async function saveExpenses() {
     const msgError = document.getElementById("expns-error");
 
     const amount = parseInt(inputAmt.value.trim())
-    const category = parseInt(inputCategory.value.trim())
+    const category = inputCategory.value.trim()
 
     //validate input values
     if(isNaN(amount) || amount <= 0 ||
@@ -58,12 +58,14 @@ async function saveExpenses() {
 //after saving expense >> fetch existing expenses >> later display
 async function loadExpenses() {
     console.log("loading expenses from server")
+
     try {
         const existingExpns = await getData("expenses")
         console.log("fetched expense:", existingExpns)
 
-        if(existingExpns.length === 0) {
+        if(!existingExpns ||existingExpns.length === 0) {
             console.warn("no expenses found")
+            displayExpenses([]) //ensuring that the load doesnt break when empty
             return;
         }
         displayExpenses(existingExpns);
@@ -79,7 +81,7 @@ function displayExpenses(expenses) {
     listHolder.id = "listed-expenses";
 
     if(expenses.length === 0) {
-        listHolder.innerHTML = <p>No expenses to track</p>
+        listHolder.innerHTML = `<p>No expenses to track</p>`
     } else {
         listHolder.innerHTML = expenses.map(exp => `
             <div class="listed-item"> 
@@ -92,14 +94,28 @@ function displayExpenses(expenses) {
         //append created element div
     expensHolder.appendChild(listHolder);
 
-    document.querySelector(".delete-Btn").forEach(button => {
+    document.querySelectorAll(".delete-Btn").forEach(button => {
         button.addEventListener("click", deleteExpense)
     })
 }
 
+//DELETE request: remove from UI and server
+async function deleteExpense(e) {
+    //target the delete btn using unique id
+    const expnsID = e.target.getAttribute("data-id")
+    console.log(`deleting expense with ID: ${expnsID}`);
 
+    //validate if id is undefines
+    if(!expnsID) return;
 
-
+    try {
+        await deleteData("expenses", expnsID);
+        console.log("successfuly deleted expense")
+        loadExpenses()
+    } catch (error) {console.error("error deleting expense:", error)}
+    
+}
+//on page load, call 
 document.addEventListener("DOMContentLoaded", () => {
     loadExpenses();
     expensBTN.addEventListener("click", createExpensInput)
