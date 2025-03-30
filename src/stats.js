@@ -17,6 +17,8 @@ async function fetchAnalysisData() {
             console.warn("One or more datasets are missing. Defaulting to 0.");
         }
 
+        console.log("Financial Goals Data:", dataOnGoals);
+
         const budget = dataOnBudget.length ? dataOnBudget[0].total : 0;
         const savings = dataOnGoals.length ? dataOnGoals[0].savings : 0;
         const investment = dataOnGoals.length ? dataOnGoals[0].investment : 0;
@@ -54,7 +56,7 @@ async function processAnalysisData() {
     if(goalsAllocation >= 20) {
         statsInsight += `A (${goalsAllocation}%) on financial goals is recommendable.\n`
     } else {
-        statsInsight += `A ${goalsAllocation}% on financial goals is risky.\n`
+        statsInsight += `A ${goalsAllocation}% on financial goals is risky. Cut on expenses.\n`
     }
 
     if(expenseAllocation >=80) {
@@ -62,7 +64,7 @@ async function processAnalysisData() {
         Allocate more to financial goals. `
     }
 
-    document.getElementById("financial-advice").textContent = statsInsight;
+    document.getElementById("financial-advice").innerHTML = statsInsight;
 
     generateChart(goalsAllocation, expenseAllocation)
  }
@@ -144,12 +146,22 @@ document.addEventListener("DOMContentLoaded", () => {
         console.error("chart btn not found")
     }
     
-    const budgetField = document.getElementById("budgtInput-field").addEventListener("input", updateWithdataChanges);
-    const saveField = document.getElementById("saving-input").addEventListener("input", updateWithdataChanges);
-    const investField = document.getElementById("investmnt-input").addEventListener("input", updateWithdataChanges);
+    //use forEach(), reducing repetition with if else on all inputs
+    const fields = [
+        {id: "budgtInput-field", name:"budgetField"},
+        {id: "saving-input", name:"budgetField"},
+        {id: "investmnt-input", name:"budgetField"},
+        {id: "expns-amt", name:"budgetField"}
+    ]
 
-    if (budgetField.addEventListener("input", updateWithdataChanges));
-    if (saveField.addEventListener("input", updateWithdataChanges));
-    if (investField.addEventListener("input", updateWithdataChanges));
-
+    fields.forEach(({id, name}) => {
+        const field = document.getElementById(id)
+        
+        if(field) {
+            field.addEventListener("input", updateWithdataChanges)
+        }
+        else {
+            console.log(`${name} not found`)
+        }
+    })
 });
