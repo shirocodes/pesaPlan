@@ -1,4 +1,4 @@
-import { getData, postData, pathData, deleteData } from "./api.js";
+import { getData, postData, deleteData } from "./api.js";
 
 const expensHolder = document.querySelector(".expenses-holder");
 const expensBTN = document.getElementById("expenses-BTN")
@@ -7,9 +7,7 @@ const categories = ["Rent", "Food", "Health", "Transport", "Entertainment", "Ame
 
 //create elements
 function createExpensInput() {
-    console.log("track expenses btn clicked")
     if(document.getElementById("expense-input")) return
-    console.log("creating expense input elements")
 
     const expensesDiv = document.createElement("div")
     expensesDiv.id = "expense-input";
@@ -24,27 +22,53 @@ function createExpensInput() {
         <p id="expns-error" style="color: red; display: none;"></p>
     `;
     expensHolder.appendChild(expensesDiv);
-    console.log("expense inputs added successfully")
     
-    document.getElementById("save-expns").addEventListener("click", saveExpenses)
 
-    //an input event to ensure validity while alerting user
+    //Enable event listeners
+    const targetCategory = document.getElementById("expns-category");
     const inputAmount = document.getElementById("expns-amt");
     const msgError = document.getElementById("expns-error");
+    const saveButton = document.getElementById("save-expns");
     
+        //focus event
+    targetCategory.addEventListener("focus", () => {
+        targetCategory.style.border = "2px solid violet";
+    });
+    inputAmount.addEventListener("focus", () => {
+        inputAmount.style.border = "2px solid green";
+        msgError.style.display = "none"; // Clear error when user starts typing
+    });
+
+        //input event for validation 
     inputAmount.addEventListener("input", (e) => {
         let value = e.target.value.trim();
 
         // avoid invalid $ negative amounts
         if (value < 0 || isNaN(value) || value === "") {
-            e.target.style.border = "2px solid red"; // Highlight error
-            msgError.textContent = "Enter a valid amount"
+             msgError.textContent = "Enter a valid amount"
             msgError.style.display = "block"
         } else {
-            e.target.style.border = "2px solid green"; // highligh validity
-            msgError.style.display = "none"
+           msgError.style.display = "none"
         }
     });
+
+        //remove focus using blur event
+    targetCategory.addEventListener("blur", () => {
+        targetCategory.style.border = "1px solid #ccc";
+    });
+    
+    inputAmount.addEventListener("blur", () => {
+        inputAmount.style.border = "1px solid #ccc";
+    });
+        //key down to save via enter key
+    inputAmount.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            console.log("Enter key pressed to save expense");
+            saveExpenses();
+        }
+        });
+            //click event on saving
+    saveButton.addEventListener("click", saveExpenses)
 }
 
 //saving expenses after click>>POST and PATCH for updates
@@ -60,7 +84,6 @@ async function saveExpenses() {
     //validate input values
     if(isNaN(amount) || amount <= 0 ||
     category === "") {
-        console.warn("invalid expense values entered")
         msgError.textContent = "Invalid: Select category and enter amount"
         msgError.style.color = "red"
         return;
@@ -68,7 +91,6 @@ async function saveExpenses() {
 
     try {
         await postData("expenses", {amount, category})
-        console.log("successfuly saved expense")
 
         //after saving, clear input values 
         inputAmt.value = ""
@@ -80,14 +102,10 @@ async function saveExpenses() {
 
 //after saving expense >> fetch existing expenses >> later display
 async function loadExpenses() {
-    console.log("loading expenses from server")
-
     try {
         const existingExpns = await getData("expenses")
-        console.log("fetched expense:", existingExpns)
 
         if(!existingExpns ||existingExpns.length === 0) {
-            console.warn("no expenses found")
             displayExpenses([]) //ensuring that the load doesnt break when empty
             return;
         }
@@ -126,14 +144,12 @@ function displayExpenses(expenses) {
 async function deleteExpense(e) {
     //target the delete btn using unique id
     const expnsID = e.target.getAttribute("data-id")
-    console.log(`deleting expense with ID: ${expnsID}`);
 
     //validate if id is undefines
     if(!expnsID) return;
 
     try {
         await deleteData("expenses", expnsID);
-        console.log("successfuly deleted expense")
         loadExpenses()
     } catch (error) {console.error("error deleting expense:", error)}
     

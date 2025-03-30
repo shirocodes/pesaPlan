@@ -1,6 +1,6 @@
         //handling all server comms via fetch API
 //asynchronously fetch data from endpoints
-const BASE_URL = "http://localhost:3000/";
+const BASE_URL = "http://localhost:3000";
 
 export async function getData(endpoint) {
     try {
