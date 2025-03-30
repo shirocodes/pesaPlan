@@ -8,10 +8,10 @@
 </head>
 <body>
     <header>
-        <h1>pesaPlan</h1>
+        <h2>pesaPlan</h2>
     </header>
     <main>
-        <!-- budget area -->
+        
         <div class="budget-card">
             <img src="assets/budget-icon.webp" alt="budget icon"
             height="60px" width="60px">
@@ -23,7 +23,6 @@
             </div>  
         </div>
 
-        <!-- financial goals -->
         <div class="goals-card">
             <img src="assets/goals-icon.webp" alt="goals icon"
             height="60px" width="60px">
@@ -34,6 +33,7 @@
                 <button id="goals-BTN">Create goals</button>
             </div>  
         </div>
+
         <div id="expenses-card">
             <img src="assets/expenses-icon.webp" alt="expenses icon"
             height="60px" width="60px">
@@ -44,21 +44,28 @@
                 <button id="expenses-BTN">Track Expenses</button>
             </div>
         </div>
+        
         <section id="statistics">
             <div>
-                <h3>Financial Analysis</h3>
                 <p>Am I spending too much?</p>
                 <button id="chart-Btn">View Statistics</button>
             </div>
             <div>
-                <canvas id="myChart"></canvas>
+                <canvas id="statsChart"></canvas>
+                <div id="financial-advice"></div>  
             </div> 
-            <div id="financial-advice">Quick Overview</div>     
+               
         </section>
     </main>
-    <footer>copypright</footer>
-    <!-- <script type="module"  src="/src/api.js"></script> -->
+    <footer>
+        <p>Copyright &copy; 2025 pesaPlan. All Rights Reserved.</p>
+    </footer>
+    
     <script type="module"  src="/src/budget.js"></script>
+    <script type="module"  src="/src/goals.js"></script>
+    <script type="module"  src="/src/expense.js"></script>
+    <script type="module"  src="/src/stats.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script type="module"  src="/src/index.js"></script>
 </body>
 </html>

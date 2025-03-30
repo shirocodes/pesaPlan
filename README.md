@@ -1,6 +1,6 @@
         
            📌pesaPlan: 
-A budget planning tool to track your spending habits against your financial goals. Developed on a single-page-application using HTML, CSS, and JS
+A budget planning tool to track and visualize your spending habits and financial goals, against an allocated budget.
 
     📝 Table of Contents
             Features
@@ -13,13 +13,13 @@ A budget planning tool to track your spending habits against your financial goal
             Contact
 1. Features  
     ✔ Budget management: A user sets a budget that tracks expenses for financial planning
-    ✔ Savings and Investment Monitoring: Based off the 20% rule of budgeting.
-    ✔ Expense categorization: A user defines and visualizes their spending based on categories 
-    ✔ Data: The tool uses a dd.json for storing and fetching the users' inputs.
+    ✔ Spending monitoring: Based off the 20% rule of budgeting.
+    ✔ Expense categorization: A user defines and visualizes their expenses based on categories 
+    ✔ Data: The tool uses a db.json for storing and fetching the users' inputs.
     ✔ Visualization: Via chart.js, the tool provides statistics and financial advice based off the inputs.
 
 2. Installation
-    # requirements 
+    ✔ requirements 
      - install node.js to run json-server
      - install Git to fork and clone the tool's repository
      - after ensuring the right installations are in place:
@@ -35,17 +35,16 @@ A budget planning tool to track your spending habits against your financial goal
     - After loading the app, create budget, set goals, track expenses by adding your expenses per category. Finally, monitor your spending and savings habits via the chart
 
 4. API reference 
-The endpoint is: http://localhost:3000
-    endpoint	   Method	    Description
-    /budget/id	    GET	    Fetch the budget data.
-    /budget/id	    PATCH	Create or update the budget.
-    /expenses/id	GET	    Retrieve all expenses.
-    /expenses/id	POST	Add a new expense.
-    /expenses/:id	DELETE	Remove an expense.
+    - The endpoint is: http://localhost:3000
+        - Endpoints include:
+            - budget
+            - financial_goal
+            - expenses
+        - Methods: GET POST PATCH DELETE
 
 5. Development Technologies
-  # Frontend - HTML,CSS,JS
-  # db.json as mock api
+  - Frontend - HTML,CSS,JS
+  - db.json as mock api
 
 6. Contributions
   - To provide contributions, do the following:
