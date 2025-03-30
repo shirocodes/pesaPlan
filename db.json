@@ -2,16 +2,37 @@
   "budget": [
     {
       "id": "1",
-      "total": 0,
+      "total": 70000,
       "user": "default"
     }
   ],
   "financial_goal": [
     {
       "id": "1",
-      "savings": 0,
-      "investment": 0
+      "savings": 10000,
+      "investment": 5000
     }
   ],
-  "expenses": []
+  "expenses": [
+    {
+      "id": "f00c",
+      "amount": 3000,
+      "category": "Health"
+    },
+    {
+      "id": "51bc",
+      "amount": 5000,
+      "category": "Transport"
+    },
+    {
+      "id": "7509",
+      "amount": 4000,
+      "category": "Amenities"
+    },
+    {
+      "id": "7ef9",
+      "amount": 3000,
+      "category": "Food"
+    }
+  ]
 }
