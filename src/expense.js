@@ -21,12 +21,30 @@ function createExpensInput() {
         </select>
          <input type="number" id="expns-amt" placeholder = "enter amount">
         <button id="save-expns">Save Expense</button>
-        <p id="expns-error"></p>
+        <p id="expns-error" style="color: red; display: none;"></p>
     `;
     expensHolder.appendChild(expensesDiv);
     console.log("expense inputs added successfully")
-
+    
     document.getElementById("save-expns").addEventListener("click", saveExpenses)
+
+    //an input event to ensure validity while alerting user
+    const inputAmount = document.getElementById("expns-amt");
+    const msgError = document.getElementById("expns-error");
+    
+    inputAmount.addEventListener("input", (e) => {
+        let value = e.target.value.trim();
+
+        // avoid invalid $ negative amounts
+        if (value < 0 || isNaN(value) || value === "") {
+            e.target.style.border = "2px solid red"; // Highlight error
+            msgError.textContent = "Enter a valid amount"
+            msgError.style.display = "block"
+        } else {
+            e.target.style.border = "2px solid green"; // highligh validity
+            msgError.style.display = "none"
+        }
+    });
 }
 
 //saving expenses after click>>POST and PATCH for updates
@@ -55,7 +73,7 @@ async function saveExpenses() {
         //after saving, clear input values 
         inputAmt.value = ""
         inputCategory.value = ""
-        //now load expense list
+        //now loading
         loadExpenses();
     } catch (error) {console.error("error saving expenses")}
 }
